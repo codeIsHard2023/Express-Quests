@@ -83,9 +83,42 @@ const getUserId = (req, res) => {
       res.sendStatus(500);
     });
 };
+const postMovie = (req, res) => {
+  const { title, director, year, color, duration } = req.body;
+  database
+    .query(
+      "insert into movies (title, director, year, color, duration) values (?, ?, ?, ?, ?)",
+      [title, director, year, color, duration]
+    )
+    .then(([result]) => {
+      res.status(201).send({ id: result.insertId });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.sendStatus(500);
+    });
+};
+
+const postUser = (req, res) => {
+  const { firstname, lastname, email, city, language } = req.body;
+  database
+    .query(
+      "insert into users (firstname, lastname, email, city, language) values (?, ?, ?, ?, ?)",
+      [firstname, lastname, email, city, language]
+    )
+    .then(([result]) => {
+      res.status(201).send({ id: result.insertId });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.sendStatus(500);
+    });
+};
 module.exports = {
   getMovies,
   getMovieById,
   getUsers,
   getUserId,
+  postMovie,
+  postUser,
 };
