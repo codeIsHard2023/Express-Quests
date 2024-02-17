@@ -26,25 +26,25 @@
 // ];
 const database = require("../../database");
 
-const getMovies = (req, res) => {
+const getUsers = (req, res) => {
   database
-    .query("select * from movies")
-    .then(([movies]) => {
-      res.status(200).json(movies);
+    .query("select * from users")
+    .then(([users]) => {
+      res.status(200).json(users);
     })
     .catch((err) => {
-      console.error(err);
+      console.log(err);
       res.sendStatus(500);
     });
 };
 
-const getMovieById = (req, res) => {
+const getUserId = (req, res) => {
   const id = parseInt(req.params.id);
   database
-    .query("select * from movies where id = ?", [id]) //id sera lu à partir de l'adresse url, ensuite transformé en INT et enfin vérifié si existe dans le tableau movies ?
-    .then(([movies]) => {
-      if (movies[0] != null) {
-        res.status(200).json(movies[0]);
+    .query("select * from users where id = ? ", [id])
+    .then(([users]) => {
+      if (users[0] != null) {
+        res.status(200).json(users[0]);
       } else {
         res.sendStatus(404);
       }
@@ -55,12 +55,12 @@ const getMovieById = (req, res) => {
     });
 };
 
-const postMovie = (req, res) => {
-  const { title, director, year, color, duration } = req.body;
+const postUser = (req, res) => {
+  const { firstname, lastname, email, city, language } = req.body;
   database
     .query(
-      "insert into movies (title, director, year, color, duration) values (?, ?, ?, ?, ?)",
-      [title, director, year, color, duration]
+      "insert into users (firstname, lastname, email, city, language) values (?, ?, ?, ?, ?)",
+      [firstname, lastname, email, city, language]
     )
     .then(([result]) => {
       res.status(201).send({ id: result.insertId });
@@ -70,9 +70,8 @@ const postMovie = (req, res) => {
       res.sendStatus(500);
     });
 };
-
 module.exports = {
-  getMovies,
-  getMovieById,
-  postMovie,
+  getUsers,
+  getUserId,
+  postUser,
 };
