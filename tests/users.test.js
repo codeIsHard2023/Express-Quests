@@ -2,7 +2,12 @@ const request = require("supertest");
 const app = require("../src/app");
 const database = require("../database");
 const crypto = require("node:crypto");
-afterAll(() => database.end());
+
+let storedUserResourceId = [];
+const cleanupAfterPostTests = async (postId) => {
+  //Ici on supprime le tuple avec l'ID postId
+  await database.query("DELETE FROM users WHERE id = ?", [postId]);
+};
 
 describe("GET /api/users", () => {
   it("should return all users", async () => {
@@ -63,6 +68,11 @@ describe("POST /api/users", () => {
     expect(userInDatabase.city).toStrictEqual(newUser.city);
     expect(userInDatabase).toHaveProperty("language");
     expect(userInDatabase.language).toStrictEqual(newUser.language);
+
+    //ici je récupére le ID de l'element que je crée avec le test via POST
+    const newResourceId = response.body.id;
+    //Ici je stocke le nouveau element créé pour le netoyage ultérieur
+    storedUserResourceId.push(newResourceId);
   });
 
   it("should return an error", async () => {
@@ -72,5 +82,20 @@ describe("POST /api/users", () => {
       .post("/api/users")
       .send(userWithMissingProps);
     expect(response.status).toEqual(500);
+
+    //ici je récupére le ID de l'element que je crée avec le test via POST
+    const newResourceId = response.body.id;
+    //Ici je stocke le nouveau element créé pour le netoyage ultérieur
+    storedUserResourceId.push(newResourceId);
   });
+});
+
+afterEach(async () => {
+  //ici on va parcourir les IDs stockés et nettoyer chaque ressource
+  for (const resourceId of storedUserResourceId) {
+    await cleanupAfterPostTests(resourceId);
+  }
+});
+afterAll(() => {
+  database.end();
 });

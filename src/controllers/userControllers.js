@@ -28,7 +28,7 @@ const database = require("../../database");
 
 const getUsers = (req, res) => {
   database
-    .query("select * from users")
+    .query("SELECT * FROM users")
     .then(([users]) => {
       res.status(200).json(users);
     })
@@ -41,7 +41,7 @@ const getUsers = (req, res) => {
 const getUserId = (req, res) => {
   const id = parseInt(req.params.id);
   database
-    .query("select * from users where id = ? ", [id])
+    .query("SELECT * FROM users WHERE id = ? ", [id])
     .then(([users]) => {
       if (users[0] != null) {
         res.status(200).json(users[0]);
@@ -59,7 +59,7 @@ const postUser = (req, res) => {
   const { firstname, lastname, email, city, language } = req.body;
   database
     .query(
-      "insert into users (firstname, lastname, email, city, language) values (?, ?, ?, ?, ?)",
+      "INSERT INTO users (firstname, lastname, email, city, language) VALUES (?, ?, ?, ?, ?)",
       [firstname, lastname, email, city, language]
     )
     .then(([result]) => {
@@ -70,8 +70,28 @@ const postUser = (req, res) => {
       res.sendStatus(500);
     });
 };
+
+const updateUser = (req, res) => {
+  const id = parseInt(req.params.body);
+  const { firstname, lastname, email, city, language } = req.body;
+  database
+    .query(
+      "UPDATE INTO users firstname = ?, lastname = ?, email = ?, city = ?, language =? WHERE id = ? "[
+        (firstname, lastname, email, city, language, id)
+      ]
+    )
+    .then(([result]) => {
+      res.status(204).sent({ id: result.insertId });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.sendStatus(500);
+    });
+};
+
 module.exports = {
   getUsers,
   getUserId,
   postUser,
+  updateUser,
 };

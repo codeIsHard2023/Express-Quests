@@ -1,7 +1,12 @@
 const request = require("supertest");
 const app = require("../src/app");
 const database = require("../database");
-afterAll(() => database.end());
+
+let storedMovieResourceId = [];
+const cleanupAfterPostTests = async (postId) => {
+  //Ici on supprime le tuple avec l'ID postId
+  await database.query("DELETE FROM movies WHERE id = ?", [postId]);
+};
 
 describe("GET /api/movies", () => {
   it("should return all movies", async () => {
@@ -62,6 +67,10 @@ describe("POST /api/movies", () => {
     expect(movieInDatabase.color).toStrictEqual(newMovie.color);
     expect(movieInDatabase).toHaveProperty("duration");
     expect(movieInDatabase.duration).toStrictEqual(newMovie.duration);
+
+    const newResourceId = response.body.id;
+    //Ici je stocke le nouveau element créé pour le netoyage ultérieur
+    storedMovieResourceId.push(newResourceId);
   });
 
   it("should return an error", async () => {
@@ -71,5 +80,18 @@ describe("POST /api/movies", () => {
       .post("/api/movies")
       .send(movieWithMissingProps);
     expect(response.status).toEqual(500);
+    const newResourceId = response.body.id;
+    //Ici je stocke le nouveau element créé pour le netoyage ultérieur
+    storedMovieResourceId.push(newResourceId);
   });
+});
+
+afterEach(async () => {
+  //ici on va parcourir les IDs stockés et nettoyer chaque ressource
+  for (const resourceId of storedMovieResourceId) {
+    await cleanupAfterPostTests(resourceId);
+  }
+});
+afterAll(() => {
+  database.end();
 });
