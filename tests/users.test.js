@@ -58,14 +58,19 @@ describe("POST /api/users", () => {
     const [userInDatabase] = result;
 
     expect(userInDatabase).toHaveProperty("id");
+
     expect(userInDatabase).toHaveProperty("firstname");
     expect(userInDatabase.firstname).toStrictEqual(newUser.firstname);
+
     expect(userInDatabase).toHaveProperty("lastname");
     expect(userInDatabase.lastname).toStrictEqual(newUser.lastname);
+
     expect(userInDatabase).toHaveProperty("email");
     expect(userInDatabase.email).toStrictEqual(newUser.email);
+
     expect(userInDatabase).toHaveProperty("city");
     expect(userInDatabase.city).toStrictEqual(newUser.city);
+
     expect(userInDatabase).toHaveProperty("language");
     expect(userInDatabase.language).toStrictEqual(newUser.language);
 
@@ -87,6 +92,91 @@ describe("POST /api/users", () => {
     const newResourceId = response.body.id;
     //Ici je stocke le nouveau element créé pour le netoyage ultérieur
     storedUserResourceId.push(newResourceId);
+  });
+});
+
+describe("PUT /api/users/:id", () => {
+  it("should edit user", async () => {
+    const newUser = {
+      firstname: "Issou",
+      lastname: "Gonsalez",
+      email: `${crypto.randomUUID()}@wild.com`,
+      city: "Madrid",
+      language: "Spanish",
+    };
+
+    const responseFirst = await request(app).post("/api/users").send(newUser);
+
+    expect(responseFirst.status).toEqual(201);
+    expect(responseFirst.body).toHaveProperty("id");
+    expect(typeof responseFirst.body.id).toBe("number");
+
+    const id = responseFirst.body.id;
+
+    const updatedUser = {
+      firstname: "Issous",
+      lastname: "Henrique-Gonsalez",
+      email: `${crypto.randomUUID()}@wild.com`,
+      city: "Vallencano",
+      language: "Catalan",
+    };
+    console.log(newUser);
+    console.log(updatedUser);
+    const responseSecond = await request(app)
+      .put(`/api/users/${id}`)
+      .send(updatedUser);
+    expect(responseSecond.status).toEqual(204);
+
+    const [users] = await database.query(
+      "SELECT * FROM users WHERE id = ?",
+      id
+    );
+
+    const [userInDatabase] = users;
+
+    expect(userInDatabase).toHaveProperty("id");
+
+    expect(userInDatabase).toHaveProperty("firstname");
+    expect(userInDatabase.firstname).toStrictEqual(updatedUser.firstname);
+
+    expect(userInDatabase).toHaveProperty("lastname");
+    expect(userInDatabase.lastname).toStrictEqual(updatedUser.lastname);
+
+    expect(userInDatabase).toHaveProperty("email");
+    expect(userInDatabase.email).toStrictEqual(updatedUser.email);
+
+    expect(userInDatabase).toHaveProperty("city");
+    expect(userInDatabase.city).toStrictEqual(updatedUser.city);
+
+    expect(userInDatabase).toHaveProperty("language");
+    expect(userInDatabase.language).toStrictEqual(updatedUser.language);
+
+    //Ici je stocke le nouveau element créé pour le netoyage ultérieur
+    storedUserResourceId.push(id);
+  });
+
+  it("should return an error", async () => {
+    const userWithMissingProps = { firstname: "Joe Green" };
+
+    const response = await request(app)
+      .put("/api/users/1")
+      .send(userWithMissingProps);
+
+    expect(response.status).toEqual(500);
+  });
+
+  it("should return no user", async () => {
+    const newUser = {
+      firstname: "Issous",
+      lastname: "Henrique-Gonsalez",
+      email: `${crypto.randomUUID()}@wild.com`,
+      city: "Vallencano",
+      language: "Catalan",
+    };
+
+    const response = await request(app).put("/api/users/0").send(newUser);
+
+    expect(response.status).toEqual(404);
   });
 });
 
