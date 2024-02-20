@@ -86,7 +86,7 @@ describe("POST /api/users", () => {
     const response = await request(app)
       .post("/api/users")
       .send(userWithMissingProps);
-    expect(response.status).toEqual(500);
+    expect(response.status).toEqual(422);
 
     //ici je récupére le ID de l'element que je crée avec le test via POST
     const newResourceId = response.body.id;
@@ -162,7 +162,7 @@ describe("PUT /api/users/:id", () => {
       .put("/api/users/1")
       .send(userWithMissingProps);
 
-    expect(response.status).toEqual(500);
+    expect(response.status).toEqual(422);
   });
 
   it("should return no user", async () => {
