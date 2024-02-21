@@ -31,6 +31,7 @@ const getUserId = (req, res) => {
 
 const postUser = (req, res) => {
   const { firstname, lastname, email, city, language } = req.body;
+
   database
     .query(
       "INSERT INTO users (firstname, lastname, email, city, language) VALUES (?, ?, ?, ?, ?)",
@@ -63,9 +64,27 @@ const updateUser = (req, res) => {
     });
 };
 
+const deleteUser = (req, res) => {
+  const id = parseInt(req.params.id);
+
+  database
+    .query("DELETE FROM users WHERE id = ?", [id])
+    .then(([result]) => {
+      if (result.affectedRows === 0) {
+        res.sendStatus(404);
+      } else {
+        res.sendStatus(204);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.sendStatus(500);
+    });
+};
 module.exports = {
   getUsers,
   getUserId,
   postUser,
   updateUser,
+  deleteUser,
 };

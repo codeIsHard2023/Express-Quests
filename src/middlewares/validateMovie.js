@@ -18,6 +18,8 @@ const validateMovie = (req, res, next) => {
 
   if (error) {
     res.status(422).json({ validationErros: error.details });
+  } else {
+    next();
   }
 };
 
