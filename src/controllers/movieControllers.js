@@ -1,15 +1,65 @@
 const database = require("../../database");
 
 const getMovies = (req, res) => {
+  // let sql = "SELECT * FROM movies";
+  // const sqlValues = [];
+
+  // if (req.query.color != null) {
+  //   sql += " WHERE color = ?";
+  //   sqlValues.push(req.query.color);
+  //   console.info(sqlValues);
+
+  //   if (req.query.max_duration != null) {
+  //     sql += " AND duration <= ?";
+  //     sqlValues.push(req.query.max_duration);
+  //   }
+  // } else if (req.query.max_duration != null) {
+  //   sql += " WHERE duration <= ?";
+  //   sqlValues.push(req.query.max_duration);
+  // }
+  const initialSql = "select * from movies";
+  const where = [];
+
+  if (req.query.color != null) {
+    where.push({
+      column: "color",
+      value: req.query.color,
+      operator: "=",
+    });
+  }
+  if (req.query.max_duration != null) {
+    where.push({
+      column: "duration",
+      value: req.query.max_duration,
+      operator: "<=",
+    });
+  }
+
   database
-    .query("SELECT * FROM movies")
+    .query(
+      where.reduce(
+        (sql, { column, operator }, index) =>
+          `${sql} ${index === 0 ? "where" : "and"} ${column} ${operator} ?`,
+        initialSql
+      ),
+      where.map(({ value }) => value)
+    )
     .then(([movies]) => {
-      res.status(200).json(movies);
+      res.json(movies);
     })
     .catch((err) => {
       console.error(err);
-      res.sendStatus(500);
+      res.status(500).send("Error retrieving data from database");
     });
+  // database
+  //   .query(sql, sqlValues)
+  //   .then(([movies]) => {
+  //     res.status(200).json(movies);
+  //   })
+  //   .catch((err) => {
+  //     console.error(err);
+  //     res.sendStatus(500);
+  //   });
 };
 
 const getMovieById = (req, res) => {
